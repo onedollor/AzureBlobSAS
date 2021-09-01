@@ -17,7 +17,7 @@ namespace AzureBlobSAS
 
         static async Task dl_task()
         {
-            string uriString = "";
+            string uriString = "https://"+ ConfigurationManager.AppSettings.Get("account") + ".blob.core.windows.net/test?sp=racwdl&st=2021-09-01T12:18:54Z&se=2021-09-30T20:18:54Z&spr=https&sv=2020-08-04&sr=c&sig=" + ConfigurationManager.AppSettings.Get("sig");
             string localDownloadPath = @"G:\data\azure";
 
             Uri sasUri = new Uri(uriString);
@@ -43,8 +43,8 @@ namespace AzureBlobSAS
         }
 
         static bool download_track(string dl_path, string filename, byte[] hash_code)
-        { 
-
+        {
+            return true;
         }
 
     }

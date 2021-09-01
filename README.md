@@ -4,7 +4,6 @@
 
 ```
   <appSettings>
-    <add key="account" value="abcd"/>
-    <add key="sig" value="****"/>
+    <add key="SasUri" value="https://{accountname}.blob.core.windows.net/{container}?{blob access token}&amp;comp=list&amp;restype=continer"/>
   </appSettings>
 ```

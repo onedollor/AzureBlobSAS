@@ -15,9 +15,7 @@ namespace AzureBlobSAS
 
             BlobContainerClient blobContainerClient = new BlobContainerClient(sasUri);
 
-            Azure.Pageable<BlobItem> blobs = blobContainerClient.GetBlobs();
-
-            foreach (BlobItem blob in blobs)
+            await foreach (BlobItem blob in blobContainerClient.GetBlobsAsync())
             {
                 string fileName = blob.Name;
                 BlobItemProperties prop = blob.Properties;

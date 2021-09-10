@@ -15,7 +15,10 @@ namespace AzureBlobSAS
             string localDownloadPath = @"G:\data\azure";
 
             Task dl = PullBlob.DownloadContainerTask(localDownloadPath, sasUristring);
+            Console.WriteLine("s dl.Wait();");
             dl.Wait();
+            Console.WriteLine("f dl.Wait();");
+            Console.ReadLine();
         }
     }
 }

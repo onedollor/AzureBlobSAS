@@ -7,7 +7,7 @@ using Azure.Storage.Blobs.Models;
 
 namespace AzureBlobSAS
 {
-    public class PullBlob : BlobTransfer
+    public class PullBlob
     {
         public static async Task DownloadContainerTask(string localDownloadPath, string sasUristring)
         {
@@ -33,7 +33,7 @@ namespace AzureBlobSAS
                     }
                 }
 
-                if (!CheckFileExist(localFilePath, BitConverter.ToString(prop.ContentHash).Replace("-", "").ToLowerInvariant()))
+                if (!FileChecker.CheckFileExist(localFilePath, BitConverter.ToString(prop.ContentHash).Replace("-", "").ToLowerInvariant()))
                 {
                     using (var file = File.Open(localFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                     {

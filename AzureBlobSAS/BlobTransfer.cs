@@ -3,7 +3,7 @@ using System.IO;
 
 namespace AzureBlobSAS
 {
-    public class BlobTransfer
+    public class FileChecker
     {
         public static bool CheckFileExist(string filename, string blobContentHash)
         {

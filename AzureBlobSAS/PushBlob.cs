@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AzureBlobSAS
 {
-    public class PushBlob : BlobTransfer
+    public class PushBlob
     {
 
     }

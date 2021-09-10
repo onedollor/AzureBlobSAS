@@ -136,20 +136,20 @@ namespace AzureBlobSAS
             }
 
 
-            string[] dirs = Directory.GetDirectories(localDownloadPath, "*", SearchOption.AllDirectories);
+            //string[] dirs = Directory.GetDirectories(localDownloadPath, "*", SearchOption.AllDirectories);
 
-            foreach (string dir in dirs)
-            {
-                IEnumerable<string> items = Directory.EnumerateFileSystemEntries(dir);
+            //foreach (string dir in dirs)
+            //{
+            //    IEnumerable<string> items = Directory.EnumerateFileSystemEntries(dir);
 
-                using (IEnumerator<string> item = items.GetEnumerator())
-                {
-                    if (!item.MoveNext())
-                    {
-                        Directory.Delete(dir);
-                    }
-                }
-            }
+            //    using (IEnumerator<string> item = items.GetEnumerator())
+            //    {
+            //        if (!item.MoveNext())
+            //        {
+            //            Directory.Delete(dir);
+            //        }
+            //    }
+            //}
         }
 
         private static async Task DownloadBlob(BlobContainerClient container, BlobItem blob, string filePath, bool checkExist=true)

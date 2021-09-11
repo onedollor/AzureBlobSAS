@@ -20,19 +20,19 @@ namespace AzureBlobSAS
             Task dl;
 
 
-            dl = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.Now.AddMinutes(-30));
-            Console.WriteLine("s dl.Wait();");
-            dl.Wait();
-            Console.WriteLine("f dl.Wait();");
+            //dl = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.Now.AddMinutes(-30));
+            //Console.WriteLine("s dl.Wait();");
+            //dl.Wait();
+            //Console.WriteLine("f dl.Wait();");
 
-            Console.ReadLine();
+            //Console.ReadLine();
 
-            dl = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.MinValue);
-            Console.WriteLine("s dl.Wait();");
-            dl.Wait();
-            Console.WriteLine("f dl.Wait();");
+            //dl = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.MinValue);
+            //Console.WriteLine("s dl.Wait();");
+            //dl.Wait();
+            //Console.WriteLine("f dl.Wait();");
 
-            Console.ReadLine();
+            //Console.ReadLine();
 
             dl = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
             Console.WriteLine("s dl.Wait();");

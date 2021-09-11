@@ -154,7 +154,7 @@ namespace AzureBlobSAS
 
         private static async Task DownloadBlob(BlobContainerClient container, BlobItem blob, string filePath, bool checkExist=true)
         {
-            if (checkExist && !FileChecker.CheckFileExist(filePath, BitConverter.ToString(blob.Properties.ContentHash).Replace("-", "").ToLowerInvariant()))
+            if (!checkExist || !FileChecker.CheckFileExist(filePath, BitConverter.ToString(blob.Properties.ContentHash).Replace("-", "").ToLowerInvariant()))
             {
                 using (var file = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {

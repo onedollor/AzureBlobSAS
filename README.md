@@ -19,7 +19,8 @@
   Task task;
   
   string localFilePath = @"G:\data\AAPL.csv";
-  string blobName = @"/data/stock/AAPL.csv";
+  //A path start from "/" e.g. "/folder_A/folder_B/blob_x.txt"
+  string blobName = @"/data/stock/AAPL.csv"; 
   bool overwrite = true;
   
   task = PushBlob.UploadAsync(container, @"C:\data\AAPL.csv", overwrite, @"/data/stock/AAPL.csv");

@@ -2,14 +2,14 @@
 
 ### App.config
 
-```
+```xml
   <appSettings>
     <add key="SasUri" value="https://{accountname}.blob.core.windows.net/{container}?{blob access token}&amp;comp=list&amp;restype=continer"/>
   </appSettings>
 ```
 
 ### PushBlob
-```
+```c#
   string sasUristring = ConfigurationManager.AppSettings.Get("SasUri");
   string localDownloadPath = @"C:\data\azure";
 
@@ -32,7 +32,7 @@
 ```
 
 ### PullBlob
-```
+```c#
   task = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
   Console.WriteLine("s task.Wait();");
   task.Wait();

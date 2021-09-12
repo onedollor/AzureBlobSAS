@@ -9,7 +9,6 @@
 ```
 
 ### PushBlob
-
 ```
   string sasUristring = ConfigurationManager.AppSettings.Get("SasUri");
   string localDownloadPath = @"C:\data\azure";
@@ -32,7 +31,6 @@
 ```
 
 ### PullBlob
-
 ```
   task = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
   Console.WriteLine("s task.Wait();");

@@ -17,34 +17,39 @@ namespace AzureBlobSAS
             Uri sasUri = new Uri(sasUristring);
             BlobContainerClient container = new BlobContainerClient(sasUri);
 
-            Task dl;
+            Task task;
 
+            task = PushBlob.UploadAsync(container, @"G:\data\AAPL.csv", false, @"/data/stock/AAPL.csv");
+            Console.WriteLine("s task.Wait();");
+            task.Wait();
+            Console.WriteLine("f task.Wait();");
+            Console.ReadLine();
 
-            //dl = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.Now.AddMinutes(-30));
-            //Console.WriteLine("s dl.Wait();");
-            //dl.Wait();
-            //Console.WriteLine("f dl.Wait();");
-
-            //Console.ReadLine();
-
-            //dl = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.MinValue);
-            //Console.WriteLine("s dl.Wait();");
-            //dl.Wait();
-            //Console.WriteLine("f dl.Wait();");
+            //task = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.Now.AddMinutes(-30));
+            //Console.WriteLine("s task.Wait();");
+            //task.Wait();
+            //Console.WriteLine("f task.Wait();");
 
             //Console.ReadLine();
 
-            dl = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
-            Console.WriteLine("s dl.Wait();");
-            dl.Wait();
-            Console.WriteLine("f dl.Wait();");
+            //task = PullBlob.DownloadBlobsFlatListing(container, localDownloadPath, DateTime.MinValue);
+            //Console.WriteLine("s task.Wait();");
+            //task.Wait();
+            //Console.WriteLine("f task.Wait();");
+
+            //Console.ReadLine();
+
+            task = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
+            Console.WriteLine("s task.Wait();");
+            task.Wait();
+            Console.WriteLine("f task.Wait();");
 
             Console.ReadLine();
 
-            dl = PullBlob.SyncBlobsByHierarchicalListing(container, localDownloadPath);
-            Console.WriteLine("s dl.Wait();");
-            dl.Wait();
-            Console.WriteLine("f dl.Wait();");
+            task = PullBlob.SyncBlobsByHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
+            Console.WriteLine("s task.Wait();");
+            task.Wait();
+            Console.WriteLine("f task.Wait();");
 
             Console.ReadLine();
 

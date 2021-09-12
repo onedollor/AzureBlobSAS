@@ -114,11 +114,11 @@ namespace AzureBlobSAS
             }
         }
 
-        public static async Task SyncBlobsByHierarchicalListing(BlobContainerClient container, string localDownloadPath, string prefix = null, int? segmentSize = 32)
+        public static async Task SyncBlobsByHierarchicalListing(BlobContainerClient container, string localDownloadPath, DateTime lastModifiedDate, string prefix = null, int? segmentSize = 32)
         {
             DateTime lastAccessTimeUtc = DateTime.UtcNow;
 
-            await PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue, prefix, segmentSize, true);
+            await PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, lastModifiedDate, prefix, segmentSize, true);
 
             PullBlob.ClearLocalFiles(localDownloadPath, lastAccessTimeUtc);
         }

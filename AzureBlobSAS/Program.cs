@@ -17,9 +17,20 @@ namespace AzureBlobSAS
             Uri sasUri = new Uri(sasUristring);
             BlobContainerClient container = new BlobContainerClient(sasUri);
 
-            Task task;
+            /* or 
+            string containerUri = "https://{accountname}.blob.core.windows.net/{container}";
+            string signature = "sp=racwdl&amp;st=2021-09-01T12:18:54Z&amp;se=2021-09-30T20:18:54Z&amp;spr=https&amp;sv=2020-08-04&amp;sr=c&amp;sig=xxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
-            task = PushBlob.UploadAsync(container, @"G:\data\AAPL.csv", false, @"/data/stock/AAPL.csv");
+            BlobContainerClient container = new BlobContainerClient(containerUri, signature);
+            */
+
+            Task task;
+            
+            string localFilePath = @"G:\data\AAPL.csv";
+            string blobName = @"/data/stock/AAPL.csv";
+            bool overwrite = true;
+
+            task = PushBlob.UploadAsync(container, localFilePath, overwrite, blobName);
             Console.WriteLine("s task.Wait();");
             task.Wait();
             Console.WriteLine("f task.Wait();");

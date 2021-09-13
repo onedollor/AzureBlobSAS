@@ -34,6 +34,14 @@
 
 ### PullBlob
 ```c#
+  string sasUristring = ConfigurationManager.AppSettings.Get("SasUri");
+  string localDownloadPath = @"C:\data\azure";
+
+  Uri sasUri = new Uri(sasUristring);
+  BlobContainerClient container = new BlobContainerClient(sasUri);
+
+  Task task;
+  
   task = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);
   Console.WriteLine("s task.Wait();");
   task.Wait();

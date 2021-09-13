@@ -15,7 +15,14 @@
 
   Uri sasUri = new Uri(sasUristring);
   BlobContainerClient container = new BlobContainerClient(sasUri);
-
+  
+  /* or 
+  string containerUri = "https://{accountname}.blob.core.windows.net/{container}";
+  string signature = "sp=racwdl&amp;st=2021-09-01T12:18:54Z&amp;se=2021-09-30T20:18:54Z&amp;spr=https&amp;sv=2020-08-04&amp;sr=c&amp;sig=xxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+  
+  BlobContainerClient container = new BlobContainerClient(containerUri, signature);
+  */
+  
   Task task;
   
   string localFilePath = @"G:\data\AAPL.csv";
@@ -40,6 +47,13 @@
   Uri sasUri = new Uri(sasUristring);
   BlobContainerClient container = new BlobContainerClient(sasUri);
 
+  /* or 
+  string containerUri = "https://{accountname}.blob.core.windows.net/{container}";
+  string signature = "sp=racwdl&amp;st=2021-09-01T12:18:54Z&amp;se=2021-09-30T20:18:54Z&amp;spr=https&amp;sv=2020-08-04&amp;sr=c&amp;sig=xxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+  
+  BlobContainerClient container = new BlobContainerClient(containerUri, signature);
+  */
+  
   Task task;
   
   task = PullBlob.DownloadBlobsHierarchicalListing(container, localDownloadPath, DateTime.MinValue);

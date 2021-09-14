@@ -15,7 +15,11 @@ namespace AzureBlobSAS
             string localDownloadPath = @"G:\data\azure";
 
             Uri sasUri = new Uri(sasUristring);
+
             BlobContainerClient container = new BlobContainerClient(sasUri);
+
+            int a;
+
 
             /* or 
             string containerUri = "https://{accountname}.blob.core.windows.net/{container}";

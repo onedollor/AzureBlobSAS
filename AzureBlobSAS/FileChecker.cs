@@ -29,5 +29,18 @@ namespace AzureBlobSAS
                 }
             }
         }
+
+        public static string CalculateBase64EncodedMD5(string filename)
+        {
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    byte[] hashBytes = md5.ComputeHash(stream);
+                    return System.Convert.ToBase64String(hashBytes);
+                }
+            }
+        }
+
     }
 }

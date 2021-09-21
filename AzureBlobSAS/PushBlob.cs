@@ -35,7 +35,9 @@ namespace AzureBlobSAS
             await blob.UploadAsync(localFilePath, overwrite);
         }
 
-        public static async Task UploadAsync(BlobContainerClient container, string localFilePath, BlobUploadOptions options, string blobName = null)
+        //operation overwrites the contents of the blob, creating a new block blob if none exists.
+        //Overwriting an existing block blob replaces any existing metadata on the blob.
+        public static async Task UploadAsync(BlobContainerClient container, string localFilePath, BlobUploadOptions options, string blobName = null, bool overwrite = false)
         {
             if (null == blobName)
             {
@@ -44,21 +46,40 @@ namespace AzureBlobSAS
 
             BlobClient blob = container.GetBlobClient(blobName);
 
+            if (overwrite && blob.Exists())
+            {
+                blob.Delete();
+            }
+
             // Upload local file
             await blob.UploadAsync(localFilePath, options);
         }
 
-        public static async Task UploadAsync(BlobContainerClient container, BinaryData content, BlobUploadOptions options, string blobName)
+        //operation overwrites the contents of the blob, creating a new block blob if none exists.
+        //Overwriting an existing block blob replaces any existing metadata on the blob.
+        public static async Task UploadAsync(BlobContainerClient container, BinaryData content, BlobUploadOptions options, string blobName, bool overwrite = false)
         {
             BlobClient blob = container.GetBlobClient(blobName);
+
+            if (overwrite && blob.Exists()) 
+            {
+                blob.Delete();
+            }
 
             // Upload local file
             await blob.UploadAsync(content, options);
         }
 
-        public static async Task UploadAsync(BlobContainerClient container, Stream content, BlobUploadOptions options, string blobName)
+        //operation overwrites the contents of the blob, creating a new block blob if none exists.
+        //Overwriting an existing block blob replaces any existing metadata on the blob.
+        public static async Task UploadAsync(BlobContainerClient container, Stream content, BlobUploadOptions options, string blobName, bool overwrite = false)
         {
             BlobClient blob = container.GetBlobClient(blobName);
+
+            if (overwrite && blob.Exists())
+            {
+                blob.Delete();
+            }
 
             // Upload local file
             await blob.UploadAsync(content, options);

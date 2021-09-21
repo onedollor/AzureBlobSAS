@@ -34,7 +34,7 @@ namespace AzureBlobSAS
             string blobName = @"/data/stock/AAPL.csv";
             bool overwrite = true;
 
-            task = PushBlob.UploadAsync(container, localFilePath, overwrite, blobName);
+            task = PushBlob.UploadAsync(container, localFilePath, new BlobUploadOptions(), blobName, overwrite);
             Console.WriteLine("s task.Wait();");
             task.Wait();
             Console.WriteLine("f task.Wait();");

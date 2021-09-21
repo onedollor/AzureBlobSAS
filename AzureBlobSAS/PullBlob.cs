@@ -5,11 +5,41 @@ using System.IO;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
+using Azure;
 
 namespace AzureBlobSAS
 {
     public class PullBlob
     {
+        public static int MAX_RERUN_COUNT { get; set; } = 3;
+        public static long BLOCK_SIZE { get; set; } = 1024 * 1024 * 100;
+        public static long MAX_SINGLE_FILE_SIZE { get; set; } = (long)5000 * (long)1000000000;
+
+        //
+        // Summary:
+        //     Download all blobs from a container by flatlisting blobs.
+        //
+        // Parameters:
+        //   container:
+        //     A Azure.Storage.Blobs.BlobContainerClient referencing the block blob that
+        //     includes the name of the account, the name of the container, and the name of
+        //     the blob.
+        //
+        //   localDownloadPath:
+        //     local folder for store downloaded blobs(files)
+        //
+        //   lastModifiedDate:
+        //     filter blob by blob lastModifiedDate >= this parameter before download.
+        //
+        //   segmentSize:
+        //     The size of Azure.Page`1s that should be requested (from service operations that
+        //     support it).
+        //
+        //   skipDeleted:
+        //     do not download blob if Deleted is true
+        //
+        // Returns:
+        //     a task.
         public static async Task DownloadBlobsFlatListing(BlobContainerClient container, string localDownloadPath, DateTime lastModifiedDate, int segmentSize=32, bool skipDeleted=true)
         {
             if (null == lastModifiedDate) lastModifiedDate = DateTime.MinValue;
@@ -57,6 +87,35 @@ namespace AzureBlobSAS
             }
         }
 
+        //
+        // Summary:
+        //     Download all blobs from a container by hierarchical blobs.
+        //
+        // Parameters:
+        //   container:
+        //     A Azure.Storage.Blobs.BlobContainerClient referencing the block blob that
+        //     includes the name of the account, the name of the container, and the name of
+        //     the blob.
+        //
+        //   localDownloadPath:
+        //     local folder for store downloaded blobs(files)
+        //
+        //   lastModifiedDate:
+        //     filter blob by blob lastModifiedDate >= this parameter before download.
+        //
+        //   prefix:
+        //     Specifies a string that filters the results to return only blobs whose name begins
+        //     with the specified prefix.
+        //
+        //   segmentSize:
+        //     The size of Azure.Page`1s that should be requested (from service operations that
+        //     support it).
+        //
+        //   skipDeleted:
+        //     do not download blob if Deleted is true
+        //
+        // Returns:
+        //     a task.
         public static async Task DownloadBlobsHierarchicalListing(BlobContainerClient container, string localDownloadPath, DateTime lastModifiedDate, string prefix = null, int? segmentSize = 32, bool skipDeleted = true)
         {
             if (null == lastModifiedDate) lastModifiedDate = DateTime.MinValue;
@@ -114,6 +173,35 @@ namespace AzureBlobSAS
             }
         }
 
+        //
+        // Summary:
+        //     Sync a local folder with a blob container.
+        //
+        // Parameters:
+        //   container:
+        //     A Azure.Storage.Blobs.BlobContainerClient referencing the block blob that
+        //     includes the name of the account, the name of the container, and the name of
+        //     the blob.
+        //
+        //   localDownloadPath:
+        //     local folder for store downloaded blobs(files)
+        //
+        //   lastModifiedDate:
+        //     filter blob by blob lastModifiedDate >= this parameter before download.
+        //
+        //   prefix:
+        //     Specifies a string that filters the results to return only blobs whose name begins
+        //     with the specified prefix.
+        //
+        //   segmentSize:
+        //     The size of Azure.Page`1s that should be requested (from service operations that
+        //     support it).
+        //
+        //   skipDeleted:
+        //     do not download blob if Deleted is true
+        //
+        // Returns:
+        //     a task.
         public static async Task SyncBlobsByHierarchicalListing(BlobContainerClient container, string localDownloadPath, DateTime lastModifiedDate, string prefix = null, int? segmentSize = 32)
         {
             DateTime lastAccessTimeUtc = DateTime.UtcNow;
@@ -165,5 +253,84 @@ namespace AzureBlobSAS
 
             File.SetLastAccessTimeUtc(filePath, DateTime.UtcNow);
         }
+
+        private static async Task RangeDownloadBlob(BlobContainerClient container, BlobItem blob, string filePath, bool checkExist = true, int rerunCount = 0)
+        {
+            if (rerunCount > MAX_RERUN_COUNT)
+            {
+                throw new Exception(String.Format("RangeDownloadBlob Failed after max retry({0})", MAX_RERUN_COUNT));
+            }
+
+            if (!checkExist || !FileChecker.CheckFileExist(filePath, BitConverter.ToString(blob.Properties.ContentHash).Replace("-", "").ToLowerInvariant()))
+            {
+                try
+                {
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+
+                    string blobContentHash = BitConverter.ToString(blob.Properties.ContentHash).Replace("-", "").ToLowerInvariant();
+
+                    string tempFilePath = filePath + "." + blobContentHash;
+                    BlobClient blobClient = container.GetBlobClient(blob.Name);
+                    long? blobLen = blob.Properties.ContentLength;
+
+                    long dlLen = 0;
+
+                    if (File.Exists(tempFilePath))
+                    {
+                        FileInfo fInfo = new FileInfo(tempFilePath);
+                        dlLen = fInfo.Length;
+                    }
+
+                    long maxLoopControl = (long)((MAX_SINGLE_FILE_SIZE - dlLen) / BLOCK_SIZE);
+
+                    using (FileStream outputStream = new FileStream(tempFilePath, FileMode.Append))
+                    {
+                        using StreamWriter writer = new StreamWriter(outputStream)
+                        {
+                            AutoFlush = false
+                        };
+
+                        while (dlLen < blobLen && maxLoopControl > 0)
+                        {
+                            HttpRange range = new HttpRange(dlLen, BLOCK_SIZE); //100MB
+                            Task<Response<BlobDownloadStreamingResult>> dlResult = blobClient.DownloadStreamingAsync(range);
+                            dlResult.Wait();
+
+                            using (Stream dataStream = dlResult.Result.Value.Content)
+                            {
+                                dataStream.CopyTo(writer.BaseStream);
+                                writer.Flush();
+
+                                dlLen += dataStream.Position;
+                            }
+
+                            maxLoopControl--;
+                        }
+
+                        writer.Close();
+                    }
+
+                    if (FileChecker.CheckFileExist(tempFilePath, blobContentHash))
+                    {
+                        File.Move(tempFilePath, filePath);
+                        File.Delete(tempFilePath);
+                    }
+                    else
+                    {
+                        File.Delete(tempFilePath);
+                        await RangeDownloadBlob(container, blob, filePath, checkExist, ++rerunCount);
+                    }
+                }
+                catch (Azure.RequestFailedException e)
+                {
+                    throw e;
+                }
+            }
+
+        }
     }
 }
+//GetBlockBlobClientCore

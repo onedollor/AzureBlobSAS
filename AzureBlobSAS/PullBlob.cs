@@ -6,6 +6,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
 using Azure;
+using System.Threading;
 
 namespace AzureBlobSAS
 {
@@ -329,8 +330,96 @@ namespace AzureBlobSAS
                     throw e;
                 }
             }
+        }
 
+        private static async Task HighSpeedRangeDownloadBlob(BlobContainerClient container, BlobItem blob, string filePath, bool checkExist = true, int rerunCount = 0)
+        {
+            string blobContentHash = BitConverter.ToString(blob.Properties.ContentHash).Replace("-", "").ToLowerInvariant();
+
+            string tempFilePath = filePath + "." + blobContentHash;
+            BlobClient blobClient = container.GetBlobClient(blob.Name);
+
+            long blobLen = blob.Properties.ContentLength.Value;
+            long blockSize = blobLen / 8;
+
+            if (!File.Exists(tempFilePath))
+            {
+                using FileStream outputStream = new FileStream(tempFilePath, FileMode.Create);
+                outputStream.SetLength(blobLen);
+            }
+
+            List<string> downloadTempFileNames = new List<string>();
+            List<Task> dlTaskList = new List<Task>();
+
+            for (long i = 0; i < blobLen; i+= blockSize) 
+            {
+                long dLen = 0;
+                long startPos = i;
+                long endPos = startPos + blockSize;
+
+                if (endPos > blobLen) endPos = blobLen;
+
+                long expectedDownloadLength = endPos - startPos;
+
+                string downloadTempFileName = tempFilePath + "." + startPos;
+
+                if (File.Exists(downloadTempFileName)) 
+                {
+                    dLen = new FileInfo(downloadTempFileName).Length;
+                }
+
+                var task = Task.Factory.StartNew(() => 
+                {
+                    using FileStream outStream = new FileStream(downloadTempFileName, FileMode.Append);
+                    int maxLoop = (int)(expectedDownloadLength / BLOCK_SIZE);
+
+                    while (dLen < expectedDownloadLength && maxLoop > 0)
+                    {
+                        HttpRange r = new HttpRange(startPos + dLen, ((dLen + BLOCK_SIZE) < expectedDownloadLength ? BLOCK_SIZE : (expectedDownloadLength - dLen)));
+                        Task<Response<BlobDownloadStreamingResult>> dResult = blobClient.DownloadStreamingAsync(r);
+                        dResult.Wait();
+
+                        using (Stream dataStream = dResult.Result.Value.Content)
+                        {
+                            dataStream.CopyTo(outStream);
+
+                            dLen += dataStream.Position;
+                        }
+                        maxLoop--;
+                    }
+                });
+
+                dlTaskList.Add(task);
+
+                i += blockSize;
+            }
+
+            Task.WaitAll(dlTaskList.ToArray());
+
+            using (FileStream tempFileStream = new FileStream(tempFilePath, FileMode.Create)) 
+            {
+                foreach (String downloadTempFileName in downloadTempFileNames) 
+                {
+                    using (FileStream input = File.OpenRead(downloadTempFileName)) 
+                    {
+                        input.CopyTo(tempFileStream);
+                    }
+
+                    File.Delete(downloadTempFileName);
+                }
+            }
+
+            if ("" == blobContentHash || FileChecker.CheckFileExist(tempFilePath, blobContentHash))
+            {
+                File.Move(tempFilePath, filePath);
+                File.Delete(tempFilePath);
+            }
+            else
+            {
+                File.Delete(tempFilePath);
+                await HighSpeedRangeDownloadBlob(container, blob, filePath, checkExist, ++rerunCount);
+            }
         }
     }
+
 }
-//GetBlockBlobClientCore
